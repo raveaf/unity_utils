@@ -18,14 +18,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Callbacks;
-using raveaf.unity_utils;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 using System;
 
+namespace raveaf.unity_utils {
+
 public class Compo_link_processor {
 
-	[PostProcessScene]
+    [PostProcessScene]
     public static void process () {
         MonoBehaviour[] objects =  Resources.FindObjectsOfTypeAll<MonoBehaviour>();
 
@@ -136,5 +137,7 @@ public class Compo_link_processor {
     static string debug_string (FieldInfo prop, MonoBehaviour mono_behaviour) {
         return "(" + prop.Name + " in " + mono_behaviour.GetType() + ", game object: " + mono_behaviour.gameObject.name +")";
     }
+
+}
 
 }
