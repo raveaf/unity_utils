@@ -17,12 +17,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using UnityEditor.Callbacks;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 using System;
-
-namespace raveaf.unity_utils {
+using raveaf.unity_utils;
 
 public class Compo_link_processor {
 
@@ -37,13 +37,13 @@ public class Compo_link_processor {
 
             foreach (var field in mono_behaviour.GetType().GetFields(flags) ) {
 
-                object[] array =  field.GetCustomAttributes(typeof( Compo_link  ), false);
+                object[] array =  field.GetCustomAttributes(typeof( Component_link  ), false);
 
                 if (array.Length <= 0) {
                     continue;
                 }
 
-                Compo_link attr = (Compo_link) array[0];
+                Component_link attr = (Component_link) array[0];
             
                 object value = null;
                 string search_name = attr.search_name.Equals("") ? field.Name : attr.search_name;
@@ -140,4 +140,16 @@ public class Compo_link_processor {
 
 }
 
+[CustomPropertyDrawer(typeof(Component_link),true)]
+public class Hide_compo_link : PropertyDrawer
+{
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+    }
+
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
+        return 0;
+    }
+
 }
+
