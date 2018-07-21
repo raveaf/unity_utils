@@ -20,25 +20,38 @@ using UnityEngine;
 namespace raveaf.unity_utils {
 
 /// <summary>
-/// Attribute to link public, serialized fields of MonoBehaviours to Components in the scene while post processing the scene
+/// Attribute to link serialized fields of MonoBehaviours to Components in the scene while post processing the scene
 /// </summary>            
 /// <param name="search_name">The name of the Component you want to link; if empty, the name of the field is used instead</param> 
 [AttributeUsage(AttributeTargets.Field , AllowMultiple = false)]
-public class Component_link : PropertyAttribute {
+public class Compo_ref : PropertyAttribute {
     
-    public string search_name;
-    public Search_in search_in;
-    public bool children_as_list;
+    private string search_name;            
+    private Search_in search_in;
+    private bool children_as_list;
 
     /// <summary>
-    /// Attribute to link public, serialized fields of MonoBehaviours to Components in the scene while post processing the scene
+    /// Attribute to link serialized fields of MonoBehaviours to Components in the scene while post processing the scene
     /// </summary>            
     /// <param name="search_name">The name of the Component you want to link; if empty, the name of the field is used instead</param>            
-    public Component_link (string search_name = "", Search_in search_in = Search_in.Children, bool children_as_list = false) {
+    public Compo_ref (string search_name = "", Search_in search_in = Search_in.Children, bool children_as_list = false) {
         this.search_name = search_name;
         this.search_in = search_in;
         this.children_as_list = children_as_list;
     }    
+
+
+    public string get_search_name() {
+        return search_name;
+    }
+
+    public Search_in get_search_in() {
+        return search_in;
+    }
+
+    public bool get_children_as_list() {
+        return children_as_list;
+    }
 } 
 
 public enum Search_in {
@@ -49,18 +62,15 @@ public enum Search_in {
 }
 
 /// <summary>
-/// Shortcut to the Component_link Attribute with Search_in.Self
+/// Shortcut to the Compo_ref Attribute with Search_in.Self
 /// </summary>
 [AttributeUsage(AttributeTargets.Field , AllowMultiple = false)]
-public class Component_link_self  : Component_link {
+public class Compo_ref_self  : Compo_ref {
 
     /// <summary>
-    /// Shortcut to the Component_link Attribute with Search_in.Self
+    /// Shortcut to the Compo_ref Attribute with Search_in.Self
     /// </summary>
-    public Component_link_self (bool children_as_list = false) {        
-        this.search_in = Search_in.Self;
-        this.children_as_list = children_as_list;
-    }
+    public Compo_ref_self (bool children_as_list = false) : base ("", Search_in.Self, children_as_list) {}
 }
 
 }

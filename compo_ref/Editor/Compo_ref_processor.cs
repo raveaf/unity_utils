@@ -26,33 +26,47 @@ using raveaf.unity_utils;
 
 public class Compo_link_processor {
 
+    //This is necessary for the Component_refs to work in play mode properly
+    [DidReloadScripts]
+    public static void process_after_script_reload () {
+        process();
+    }
+    
     [PostProcessScene]
-    public static void process () {
+    public static void process () {                
+
         MonoBehaviour[] objects =  Resources.FindObjectsOfTypeAll<MonoBehaviour>();
 
         for (int i = 0; i < objects.Length; i++) {
             MonoBehaviour mono_behaviour = objects[i];
 
-            var flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
             foreach (var field in mono_behaviour.GetType().GetFields(flags) ) {
 
-                object[] array =  field.GetCustomAttributes(typeof( Component_link  ), false);
+                Func<string> create_debug_string = () => "(" + field.Name + " in " + mono_behaviour.GetType() + ", game object: " + mono_behaviour.gameObject.name +")";
+
+                object[] array =  Attribute.GetCustomAttributes(field, typeof( Compo_ref  ), true );
 
                 if (array.Length <= 0) {
                     continue;
                 }
 
-                Component_link attr = (Component_link) array[0];
+                if ( ! field.IsPublic && Attribute.GetCustomAttributes(field, typeof( SerializeField  ), true ).Length <= 0 ) {
+                    Debug.LogError("The field is not a field to serialize " + create_debug_string() );
+                    continue;
+                }
+
+                Compo_ref attr = (Compo_ref) array[0];
             
                 object value = null;
-                string search_name = attr.search_name.Equals("") ? field.Name : attr.search_name;
+                string search_name = attr.get_search_name().Equals("") ? field.Name : attr.get_search_name();
                 Type search_type = field.FieldType;
 
-                if (attr.children_as_list) {
+                if (attr.get_children_as_list() ) {
 
                     if ( ! search_type.IsGenericType || search_type.GetGenericTypeDefinition() != typeof(List<>)) {
-                        Debug.LogError("The field is not a list " + debug_string(field, mono_behaviour) );
+                        Debug.LogError("The field is not a list " + create_debug_string() );
                         continue;
                     }
 
@@ -60,12 +74,12 @@ public class Compo_link_processor {
                 }
 
                 if ( ! search_type.IsSubclassOf(typeof(Component) ) && ! search_type.IsInterface ) {
-                    Debug.LogError("Wrong type of field " + debug_string(field, mono_behaviour) );
+                    Debug.LogError("Wrong type of field " + create_debug_string() );
                     continue;
                 }
 
 
-                switch (attr.search_in) {
+                switch (attr.get_search_in() ) {
                     case Search_in.Self:
                         value = mono_behaviour.GetComponent(search_type);
                         break;
@@ -93,11 +107,11 @@ public class Compo_link_processor {
                 }
             
                 if (value == null || value.Equals(null) ) {
-                    Debug.LogError("Compo_link: Search unsuccessful " + debug_string(field, mono_behaviour) );
+                    Debug.LogError("Compo_link: Search unsuccessful " + create_debug_string() );
                     continue;
                 }
 
-                if (attr.children_as_list) {
+                if (attr.get_children_as_list() ) {
                     IList list = (IList) Activator.CreateInstance(field.FieldType);
 
                     Transform parent = (Transform) value;
@@ -112,7 +126,7 @@ public class Compo_link_processor {
                     }
 
                     if (list.Count <= 0) {
-                        Debug.LogWarning("Compo_link: No " + generic_type + " children found " + debug_string(field, mono_behaviour) );
+                        Debug.LogWarning("Compo_link: No " + generic_type + " children found " + create_debug_string() );
                     }
 
                     field.SetValue(mono_behaviour, list);    
@@ -134,13 +148,9 @@ public class Compo_link_processor {
         return null;
     }
 
-    static string debug_string (FieldInfo prop, MonoBehaviour mono_behaviour) {
-        return "(" + prop.Name + " in " + mono_behaviour.GetType() + ", game object: " + mono_behaviour.gameObject.name +")";
-    }
-
 }
 
-[CustomPropertyDrawer(typeof(Component_link),true)]
+[CustomPropertyDrawer(typeof(Compo_ref),true)]
 public class Hide_compo_link : PropertyDrawer
 {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -152,4 +162,5 @@ public class Hide_compo_link : PropertyDrawer
     }
 
 }
+
 
