@@ -36,12 +36,14 @@ public class Compo_link_processor {
     public static void process () {                
 
         MonoBehaviour[] objects =  Resources.FindObjectsOfTypeAll<MonoBehaviour>();
-
+        
+        //Looping through all the objects
         for (int i = 0; i < objects.Length; i++) {
             MonoBehaviour mono_behaviour = objects[i];
 
             var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
+            
+            //looping through all the fields of the current object
             foreach (var field in mono_behaviour.GetType().GetFields(flags) ) {
 
                 Func<string> create_debug_string = () => "(" + field.Name + " in " + mono_behaviour.GetType() + ", game object: " + mono_behaviour.gameObject.name +")";
@@ -49,6 +51,7 @@ public class Compo_link_processor {
                 object[] array =  Attribute.GetCustomAttributes(field, typeof( Compo_ref  ), true );
 
                 if (array.Length <= 0) {
+                    //no annotation found
                     continue;
                 }
 
@@ -78,7 +81,7 @@ public class Compo_link_processor {
                     continue;
                 }
 
-
+                //finding the component
                 switch (attr.get_search_in() ) {
                     case Search_in.Self:
                         value = mono_behaviour.GetComponent(search_type);
@@ -112,6 +115,7 @@ public class Compo_link_processor {
                 }
 
                 if (attr.get_children_as_list() ) {
+                    //creating and filling the list for children as list
                     IList list = (IList) Activator.CreateInstance(field.FieldType);
 
                     Transform parent = (Transform) value;
@@ -137,8 +141,10 @@ public class Compo_link_processor {
         }
     }
 
-
-    static object child_by_name(Component component, Type type , string name)  {
+    /// <summary>
+    /// Find components by name even if they are inactive.
+    /// </summary>
+    static object child_by_name(Component component, Type type, string name)  {
         foreach (Component t in component.GetComponentsInChildren(type,true) ) {
             if (t.gameObject.name.Trim().Equals(name.Trim() ) ) {
                 return t;
