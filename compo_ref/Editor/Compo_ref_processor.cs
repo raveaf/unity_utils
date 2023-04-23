@@ -150,6 +150,9 @@ public class Compo_link_processor {
 
 }
 
+/// <summary>
+/// Used to hide the fields in the inspector without having to add the additional HideInInspector annotation.
+/// </summary>
 [CustomPropertyDrawer(typeof(Compo_ref),true)]
 public class Hide_compo_link : PropertyDrawer
 {
